@@ -17,3 +17,35 @@ const categorize = (products)=>{
     }
 }
 
+exports.getSnitchProducts = async (req,res)=>{
+    try {
+        const products = await snitchScraper();
+        res.json(categorize(products));
+    } catch (error) {
+        res.status(500).json({
+            error: "Unable to fetch products from Snitch",
+        })
+    }
+}
+
+exports.getBewakoofProducts = async(req,res)=>{
+    try {
+        const products = await bewakoofScraper();
+        res.json(categorize(products));
+    } catch (error) {
+        res.status(500).json({
+            error: "Unable to fetch products from Bewakoof",
+        })
+    }
+}
+
+exports.getHMProducts = async(req,res)=>{
+    try {
+        const products = await HMScraper();
+        res.json(categorize(products));
+    } catch (error) {
+        res.status(500).json({
+            error: "Unable to fetch products from HM",
+        })
+    }
+}
