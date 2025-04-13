@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import fetchData from "../Data/fetchData";
+import { fetchBewakoof, fetchSnitchData, fetchUrbanMonkeyData } from "../Data/fetchData";
 import ProductCard from '../components/ProductCard';
 
 const Home = () => {
@@ -14,7 +14,13 @@ const Home = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const fetched = await fetchData();
+        const [bewakoof, snitch, urbanMonkey] = await Promise.all([
+          fetchBewakoof(),
+          fetchSnitchData(),
+          fetchUrbanMonkeyData()
+        ]);
+        const fetched = { bewakoof, snitch, urbanMonkey };
+        console.log("Fetched data:", fetched); // ✅ debug log
         setData(fetched);
       } catch (err) {
         console.error("❌ Error fetching data", err);
@@ -37,9 +43,13 @@ const Home = () => {
             <div key={type} className="mb-8">
               <h3 className="text-xl font-semibold capitalize mb-2">{type}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {products.map((product, index) => (
-                  <ProductCard key={index} {...product} />
-                ))}
+                {Array.isArray(products) && products.length > 0 ? (
+                  products.map((product, index) => (
+                    <ProductCard key={index} {...product} />
+                  ))
+                ) : (
+                  <p className="text-gray-500">No products found.</p>
+                )}
               </div>
             </div>
           ))}

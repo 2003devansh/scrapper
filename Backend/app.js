@@ -1,10 +1,17 @@
 const express = require('express');
-const app  = express();
-const productsroute = require('./routes/productsRoute') ;
+const cors = require('cors'); // <-- Import CORS
+const app = express();
 
+const productsroute = require('./routes/productsRoute');
 
-app.use('/api/products',productsroute) ;
+// ✅ Enable CORS (for all origins)
+app.use(cors());
 
-app.listen(4000,()=>{
-    console.log("Server is running on port 4000") ;
-})
+// OR for stricter control (only allow your Vite frontend during dev)
+// app.use(cors({ origin: 'http://localhost:5173' }));
+
+app.use('/api/products', productsroute);
+
+app.listen(4000, () => {
+    console.log("🚀 Server is running on port 4000");
+});
