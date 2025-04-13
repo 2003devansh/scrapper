@@ -1,51 +1,23 @@
-const snitchScraper = require('../scraper/snitch');
-const bewakoofScraper = require('../scraper/bewakoof');
-const HMScraper = require('../scraper/HMScrapper');
+const scrapeBewakoof = require('../scraper/bewakoof');
+const scrapeSnitchTshirts  = require('../scraper/snitch') ;
+
+exports.getBewakoofProducts = async (req, res) => {
+    try {
+        const data = await scrapeBewakoof();
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching from Bewakoof:', error.message);
+        res.status(500).json({ error: 'Unable to fetch products from Bewakoof' });
+    }
+};
 
 
-const categorize = (products)=>{
-    return {
-        oversized_tees : products.filter((products)=>{
-            return products.name.toLowerCase().includes('oversized'); 
-        }),
-        trouser: products.filter((products)=>{
-            return ['trouser','pants','cargo'].some((keyword)=>{
-                return products.name.toLowerCase().includes(keyword);
-            });
-        }),
-        all: products
-    }
-}
-
-exports.getSnitchProducts = async (req,res)=>{
+exports.getSnitchProducts = async (req, res) => {
     try {
-        const products = await snitchScraper();
-        res.json(categorize(products));
+        const products = await scrapeSnitchTshirts();
+        res.json(products);
     } catch (error) {
-        res.status(500).json({
-            error: "Unable to fetch products from Snitch",
-        })
-    }
-}
-
-exports.getBewakoofProducts = async(req,res)=>{
-    try {
-        const products = await bewakoofScraper();
-        res.json(categorize(products));
-    } catch (error) {
-        res.status(500).json({
-            error: "Unable to fetch products from Bewakoof",
-        })
-    }
-}
-
-exports.getHMProducts = async(req,res)=>{
-    try {
-        const products = await HMScraper();
-        res.json(categorize(products));
-    } catch (error) {
-        res.status(500).json({
-            error: "Unable to fetch products from HM",
-        })
+        console.error('❌ Error in Snitch controller:', error.message);
+        res.status(500).json({ error: 'Failed to fetch Snitch t-shirts' });
     }
 }
