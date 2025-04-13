@@ -1,36 +1,77 @@
 const puppeteer = require('puppeteer');
 
-async function scrapeSnitchTshirts() {
-    const url = 'https://www.snitch.com/men-t-shirts/buy';
-    const browser = await puppeteer.launch({ headless: true });
+
+async function scrapeSnitchTshirts(page) {
+    const url = 'https://www.snitch.com/men-t-shirts/buy?utm_source=google&utm_medium=cpc&utm_campaign=22156580627&utm_term=snitch%20t%20shirt&utm_content=734581607193&gad_source=1&gclid=CjwKCAjwwe2_BhBEEiwAM1I7sffd0yHYcthCV0Ej4UVxSMjPdedJoOVoaGrwWWhhoz4QsNKK1BZQPhoCWr4QAvD_BwE' ;
+    console.log('Navigating to:',url);
+
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 0 });
+    await page.waitForSelector('a[href*="/men-t-shirts/"]');
+
+    const products = await page.$$eval('a[href*="/men-t-shirts/"]',anchors =>{
+        const items = anchors.map(anchor =>{
+            const imgTag = anchor.querySelector('img');
+            const nameTag = anchor.parentElement.querySelector('h2');
+            const priceTag = anchor.parentElement.querySelector('p[style*="font-size: 13px"]');
+
+            const name = nameTag?.innerText.trim() || 'No name' ;
+            const image = imgTag?.src || '' ;
+            const price = priceTag?.innerText.trim() || 'N/A' ; 
+
+            return { name, image, price };
+        })
+        return items.slice(0,20) ;
+    });
+
+    console.log(`✅ Scraped ${products.length} Snitch t-shirts`);
+    return products;
+}
+
+
+async function scrapeSnitchTrousers(page){
+    const url = 'https://www.snitch.com/men-trousers/buy' ;
+    console.log('Navigating to:',url);
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 0 });
+    await page.waitForSelector('a[href*="/men-trousers/"]');
+
+    const products = await page.$$eval('a[href*="/men-trousers/"]',anchors =>{
+        const items = anchors.map(anchor =>{
+            const imgTag = anchor.querySelector('img');
+            const nameTag = anchor.parentElement.querySelector('h2');
+            const priceTag = anchor.parentElement.querySelector('p[style*="font-size: 13px"]');
+
+            const name = nameTag?.innerText.trim() || 'No name' ;
+            const image = imgTag?.src || '' ;
+            const price = priceTag?.innerText.trim() || 'N/A' ;
+
+            return {name,image,price} ;
+        })
+
+        return items.slice(0,20);
+    })
+    console.log(`✅ Scraped ${products.length} Snitch trousers`);
+    return products;
+}
+
+module.exports = async function scrapeSnitch(){
+    const browser = await puppeteer.launch({headless: true});
     const page = await browser.newPage();
 
     try {
-        console.log('Navigating to:', url);
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 0 });
+        const tshirts = await scrapeSnitchTshirts(page);
+        const trousers = await scrapeSnitchTrousers(page);
 
-        await page.waitForSelector('.ProductCard__CardWrapper-sc-1v5tz3n-0');
-
-        const products = await page.$$eval('.ProductCard__CardWrapper-sc-1v5tz3n-0', cards => {
-            return cards.map(card => {
-                const imgTag = card.querySelector('img');
-                const name = imgTag?.alt || 'No name';
-                const image = imgTag?.src || '';
-                const priceElement = card.querySelector('div[class*="Price__PriceWrapper"] span');
-                const price = priceElement ? priceElement.innerText.trim() : 'N/A';
-
-                return { name, image, price };
-            });
-        });
-
-        console.log(`✅ Scraped ${products.length} Snitch t-shirts`);
-        return products.slice(0, 20); // limit to 20
+        return{
+            tshirts,
+            trousers
+        }
     } catch (error) {
         console.error('❌ Error scraping Snitch:', error);
-        return [];
-    } finally {
+        return {
+            tshirts: [],
+            trousers: []
+        };
+    }finally {
         await browser.close();
     }
 }
-
-module.exports = scrapeSnitchTshirts;

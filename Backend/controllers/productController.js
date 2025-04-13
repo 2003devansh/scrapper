@@ -1,5 +1,6 @@
 const scrapeBewakoof = require('../scraper/bewakoof');
-const scrapeSnitchTshirts  = require('../scraper/snitch') ;
+const scrapeSnitch  = require('../scraper/snitch') ;
+const scrapeUrbanMonkey = require('../scraper/urbanMonkeyScraper');
 
 exports.getBewakoofProducts = async (req, res) => {
     try {
@@ -14,10 +15,26 @@ exports.getBewakoofProducts = async (req, res) => {
 
 exports.getSnitchProducts = async (req, res) => {
     try {
-        const products = await scrapeSnitchTshirts();
+        const products = await scrapeSnitch();
         res.json(products);
     } catch (error) {
         console.error('❌ Error in Snitch controller:', error.message);
         res.status(500).json({ error: 'Failed to fetch Snitch t-shirts' });
+    }
+}
+
+
+exports.getUrbanMonkeyTshirts = async (req,res)=>{
+    try {
+        const data = await scrapeUrbanMonkey();
+        res.status(200).json({
+            source: 'Urban Monkey',
+            category: 't-shirts',
+            count: data.length,
+            products: data
+        });
+    } catch (error) {
+        console.error('❌ Error in Urban Monkey Controller:', error);
+        res.status(500).json({ message: 'Failed to fetch Urban Monkey T-shirts' });
     }
 }
