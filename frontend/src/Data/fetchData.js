@@ -1,5 +1,6 @@
 const BASE_URL = 'http://localhost:4000/api/products';
 
+// ✅ Bewakoof fetch
 export async function fetchBewakoof() {
   try {
     const res = await fetch(`${BASE_URL}/bewakoof`);
@@ -16,13 +17,13 @@ export async function fetchBewakoof() {
   }
 }
 
-// ✅ You NEED this function in fetchData.js
+// ✅ Snitch fetch
 export async function fetchSnitchData() {
   try {
     const res = await fetch(`${BASE_URL}/snitch`, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to fetch Snitch data');
+
     const data = await res.json();
-    console.log('👀 Raw Snitch data in fetchSnitchData():', data);
-    
     return {
       tshirts: data.tshirts || [],
       trousers: data.trousers || [],
@@ -33,6 +34,7 @@ export async function fetchSnitchData() {
   }
 }
 
+// ✅ Urban Monkey fetch
 export async function fetchUrbanMonkeyData() {
   try {
     const res = await fetch(`${BASE_URL}/urbanMonkey`);
