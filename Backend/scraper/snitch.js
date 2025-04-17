@@ -1,70 +1,64 @@
 const puppeteer = require('puppeteer');
 
-async function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 async function scrapeSnitchTshirts(page) {
-    const url = 'https://www.snitch.com/men-t-shirts/buy?utm_source=google&utm_medium=cpc&utm_campaign=22156580627&utm_term=snitch%20t%20shirt&utm_content=734581607193&gad_source=1&gclid=CjwKCAjwwe2_BhBEEiwAM1I7sffd0yHYcthCV0Ej4UVxSMjPdedJoOVoaGrwWWhhoz4QsNKK1BZQPhoCWr4QAvD_BwE';
-    console.log('Navigating to:', url);
+  const url = 'https://www.snitch.com/men-oversized-t-shirts/buy';
+  console.log('Navigating to:', url);
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 0 });
-    await page.waitForSelector('a[href*="/men-t-shirts/"] img'); // ✅ More specific selector
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 0 });
+  await page.waitForSelector('.ProductListItem__Wrapper-sc-pz1b4t-0');
 
-    const products = await page.$$eval('a[href*="/men-t-shirts/"]', anchors => {
-        const items = anchors.map(anchor => {
-            const imgTag = anchor.querySelector('img');
-            const nameTag = anchor.parentElement.querySelector('h2');
-            const priceTag = anchor.parentElement.querySelector('p[style*="font-size: 13px"]');
+  const products = await page.$$eval('.ProductListItem__Wrapper-sc-pz1b4t-0', items => {
+    return items.map(item => {
+      const name = item.querySelector('h2')?.innerText.trim() || 'No name';
+      const image = item.querySelector('img')?.src || '';
+      const price = item.querySelector('p')?.innerText.trim() || 'N/A';
+      const url = item.querySelector('a')?.href || '';
 
-            const name = nameTag?.innerText.trim() || 'No name';
-            const image = imgTag?.src || '';
-            const price = priceTag?.innerText.trim() || 'N/A';
+      return { name, image, price, url };
+    }).slice(0, 10);
+  });
 
-            return { name, image, price };
-        });
-        return items.slice(0, 10);
-    });
-
-    console.log(`✅ Scraped ${products.length} Snitch t-shirts`);
-    return products;
+  console.log(`✅ Scraped ${products.length} Snitch oversized t-shirts`);
+  return products;
 }
 
 async function scrapeSnitchTrousers(page) {
-    const url = 'https://www.snitch.com/men-trousers/buy';
-    console.log('Navigating to:', url);
+  const url = 'https://www.snitch.com/men-trousers/buy';
+  console.log('Navigating to:', url);
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 0 });
-    await delay(2000);
-    await page.waitForSelector('h2');
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 0 });
+  await page.waitForSelector('.ProductListItem__Wrapper-sc-pz1b4t-0');
 
-    const products = await page.$$eval('a[href*="/men-trousers/"]', anchors => {
-        return anchors.map(anchor => {
-            const imgTag = anchor.querySelector('img');
-            const nameTag = anchor.parentElement?.querySelector('h2');
-            const priceTag = anchor.parentElement?.querySelector('p[style*="font-size: 13px"]');
+  const products = await page.$$eval('.ProductListItem__Wrapper-sc-pz1b4t-0', items => {
+    return items.map(item => {
+      const name = item.querySelector('h2')?.innerText.trim() || 'No name';
+      const image = item.querySelector('img')?.src || '';
+      const price = item.querySelector('p')?.innerText.trim() || 'N/A';
+      const url = item.querySelector('a')?.href || '';
 
-            const name = nameTag?.innerText.trim() || 'No name';
-            const image = imgTag?.src || '';
-            const price = priceTag?.innerText.trim() || 'N/A';
+      return { name, image, price, url };
+    }).slice(0, 10);
+  });
 
-            return { name, image, price };
-        }).slice(0, 10);
-    });
-
-    console.log(`✅ Scraped ${products.length} Snitch trousers`);
-    return products;
+  console.log(`✅ Scraped ${products.length} Snitch trousers`);
+  return products;
 }
 
 module.exports = async function scrapeSnitch() {
-    const browser = await puppeteer.launch({ headless: true });
-    const [page1, page2] = await Promise.all([browser.newPage(), browser.newPage()]);
+  const browser = await puppeteer.launch({ headless: true });
+  const [page1, page2] = await Promise.all([browser.newPage(), browser.newPage()]);
 
+  try {
     const [tshirts, trousers] = await Promise.all([
-        scrapeSnitchTshirts(page1),
-        scrapeSnitchTrousers(page2)
+      scrapeSnitchTshirts(page1),
+      scrapeSnitchTrousers(page2)
     ]);
 
-    await browser.close();
     return { tshirts, trousers };
+  } catch (error) {
+    console.error('❌ Error scraping Snitch:', error);
+    return { tshirts: [], trousers: [] };
+  } finally {
+    await browser.close();
+  }
 };

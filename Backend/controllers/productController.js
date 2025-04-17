@@ -15,13 +15,17 @@ exports.getBewakoofProducts = async (req, res) => {
 
 exports.getSnitchProducts = async (req, res) => {
     try {
-        const products = await scrapeSnitch();
-        res.json(products);
+      const products = await scrapeSnitch();
+      res.status(200).json(products); // ✅ Explicit status
     } catch (error) {
-        console.error('❌ Error in Snitch controller:', error.message);
-        res.status(500).json({ error: 'Failed to fetch Snitch t-shirts' });
+      console.error('❌ Error in Snitch controller:', error.message);
+      res.status(500).json({
+        error: 'Failed to fetch Snitch products',
+        details: error.message,
+      });
     }
-}
+  };
+  
 
 
 exports.getUrbanMonkeyTshirts = async (req,res)=>{
