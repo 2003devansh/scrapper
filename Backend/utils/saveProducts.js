@@ -6,7 +6,7 @@ async function saveProducts(productsArray, brand) {
         name: item.name,
         image: item.image.startsWith('http') ? item.image : 'https:' + item.image,
         price: item.price,
-        brand,
+        brand: item.brand,
         category: item.category,
         productUrl: item.url,
       };
