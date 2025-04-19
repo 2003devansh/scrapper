@@ -5,21 +5,35 @@ const saveProducts = require('../utils/saveProducts');
 
 // 🔵 BEWAKOOF CONTROLLER
 exports.getBewakoofProducts = async (req, res) => {
-  try {
-    const { tshirts, trousers } = await scrapeBewakoof();
-
-    const formattedProducts = [
-      ...tshirts.map(p => ({ ...p, brand: 'Bewakoof', category: 'tshirt' })),
-      ...trousers.map(p => ({ ...p, brand: 'Bewakoof', category: 'trouser' }))
-    ];
-
-    const savedCount = await saveProducts(formattedProducts);
-    res.status(200).json({ savedCount });
-  } catch (error) {
-    console.error('❌ Error fetching from Bewakoof:', error.message);
-    res.status(500).json({ error: 'Unable to fetch products from Bewakoof' });
-  }
-};
+    try {
+      const { tshirts, trousers } = await scrapeBewakoof();
+  
+      const formattedTshirts = tshirts.map(p => ({
+        ...p,
+        brand: 'Bewakoof',
+        category: 'tshirt',
+      }));
+  
+      const formattedTrousers = trousers.map(p => ({
+        ...p,
+        brand: 'Bewakoof',
+        category: 'trouser',
+      }));
+  
+      const allFormattedProducts = [...formattedTshirts, ...formattedTrousers];
+  
+      const savedCount = await saveProducts(allFormattedProducts);
+      console.log('✅ Saved products count:', savedCount);
+  
+      res.status(200).json({ savedCount }); // ✅ Simplified response
+    } catch (error) {
+      console.error('❌ Error in Bewakoof controller:', error.message);
+      res.status(500).json({ error: 'Unable to fetch products from Bewakoof' });
+    }
+  };
+  
+  
+  
 
 // 🔵 SNITCH CONTROLLER
 exports.getSnitchProducts = async (req, res) => {
